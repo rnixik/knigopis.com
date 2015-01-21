@@ -1,0 +1,117 @@
+.navbar .login-btn {
+  color: #fff;
+  font-size: 110%;
+}
+.userinfo-container .user-photo {
+  height: 20px;
+  width: 20px;
+}
+.userinfo-container .user-nickname {
+    font-weight: bold;
+}
+.signin-container {
+    margin-top: 4px;
+}
+
+.navbar-right {
+    margin-right: 0;
+}
+
+.glyphicon-refresh-animate {
+  -animation: spin .7s infinite linear;
+  -ms-animation: spin .7s infinite linear;
+  -webkit-animation: spinw .7s infinite linear;
+  -moz-animation: spinm .7s infinite linear;
+}
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg);}
+  to { transform: scale(1) rotate(360deg);}
+}
+@-webkit-keyframes spinw {
+  from { -webkit-transform: rotate(0deg);}
+  to { -webkit-transform: rotate(360deg);}
+}
+@-moz-keyframes spinm {
+  from { -moz-transform: rotate(0deg);}
+  to { -moz-transform: rotate(360deg);}
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+.books-list, 
+.wish-list {
+    padding: 0;
+}
+.books-list > li, 
+.wish-list > li{
+    margin-bottom: 20px;
+    padding-left: 0;
+    list-style: none;
+}
+.books-list .notes, 
+.wish-list .notes{
+    white-space: pre-line;
+}
+.books-list .on-title-show-btn, 
+.wish-list .on-title-show-btn {
+    font-size: 80%;
+    visibility: hidden;
+}
+.books-list .book-title:hover .on-title-show-btn, 
+.wish-list .book-title:hover .on-title-show-btn {
+    visibility: visible;
+}
+
+.navbar {
+    background: url("/img/random_grey_variations.png") repeat scroll 0 0 rgba(0, 0, 0, 0);
+}
+
+.sidenav-container {
+    position: fixed;
+}
+
+.sidenav-years > li.active > a{
+    background-color: transparent;
+    border-left: 2px solid #563d7c;
+    color: #563d7c;
+    font-weight: 700;
+    padding-left: 13px;
+}
+.sidenav-years > li > a{
+    padding: 2px 0 2px 15px;
+    font-size: 90%;
+    cursor: pointer;
+}
+.main-content {
+    min-height: 100px;
+}
+.books-list-container .book-group {
+    margin-bottom: 40px;
+}
+.features > div {
+    text-align: center;
+}
+.latest-users-container {
+    margin-top: 30px;
+}
+
+.private-text-info {
+    color: #999;
+}
+
+.error-message-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1050;
+}
+.navbar-header .logo-container {
+    padding: 4px 15px 15px 15px;
+}
+.main-content .subscribe-btn {
+    font-size: 22px;
+    margin-left: 8px;
+    cursor: pointer;
+}

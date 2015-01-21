@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html ng-app="listApp">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title update-title>Книгопись - сервис учёта прочитанных книг</title>
+        <link rel="shortcut icon" href="/favicon.ico?v=20150119">
+        <meta name="description" content="">
+        <base href="/">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <style>
+            body {
+                padding-top: 65px;
+                padding-bottom: 20px;
+            }
+        </style>
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <!--[if lt IE 9]>
+            <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+            <script>window.html5 || document.write('<script src="/js/vendor/html5shiv.js"><\/script>')</script>
+        <![endif]-->
+    </head>
+    <body ng-controller="MainController">
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand logo-container" href="#"><img src="/img/logo.png" alt="Книгопись" title="Книгопись"></a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    
+                    <ul class="nav navbar-nav" ng-cloak>
+                        <li ng-show="user" ng-class="{active: state.current.name === 'user_books' && viewUser && user.id === viewUser.id}">
+                            <a ui-sref="user_books({nickname: user.get('nickname'), u: user.id})">Мой список книг</a>
+                        </li>
+                        <li ng-show="user" ng-class="{active: state.current.name === 'book.add'}"><a ui-sref="book.add">Добавить книгу</a></li>
+                        <li class="hidden-sm" ng-show="user" ng-class="{active: state.current.name === 'wish.list'}"><a ui-sref="wish.list">Список к прочтению</a></li>
+                        <li class="hidden-sm" ng-show="user" ng-class="{active: state.current.name === 'wish.add'}"><a ui-sref="wish.add">Добавить к прочтению</a></li>
+                        <li ng-show="loading"><a href="#" ><span class="hidden-sm hidden-xs">Загрузка {{loading}} </span><span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span></a></li>
+                    </ul>
+                    
+                    <div class="navbar-right">
+
+                        <div class="signin-container" ng-cloak ng-show="!user && !loginLoading">
+                            <div class="login-btn">Войти через</div> 
+                            <div id="uLogin" data-uloginid="eaffd33e"></div>
+                        </div>
+
+
+                        <ul class="nav navbar-nav userinfo-container" ng-cloak ng-show="user && !loginLoading">
+                            <li class="dropdown">
+                                <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"> 
+                                    <img class="user-photo" ng-src="{{user.get('photo')}}" alt="">
+                                    <span class="user-nickname">{{user.get('nickname')}}</span>
+                                    <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li class="visible-sm" ng-show="user" ng-class="{active: state.current.name === 'wish.list'}"><a ui-sref="wish.list">Список к прочтению</a></li>
+                                    <li class="visible-sm" ng-show="user" ng-class="{active: state.current.name === 'wish.add'}"><a ui-sref="wish.add">Добавить к прочтению</a></li>
+                                    <li class="divider visible-sm"></li>
+                                    <li><a ui-sref="settings" href="#">Настройки</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="#" class="logout-btn" ng-click="logout()">Выйти</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <ul class="nav navbar-nav login-loading-container" ng-show="loginLoading">
+                            <li><a href="#" >Выполняется вход <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span></a></li>
+                        </ul>
+
+                    </div>
+
+
+
+                </div><!--/.navbar-collapse -->
+            </div>
+        </nav>
+
+        <div>
+            <div class="container">
+                <div class="row">
+                    
+                    <div class="col-md-12 main-content">
+                        <div class="alert alert-danger error-message-container" role="alert" ng-show="errorMessage" ng-cloak>
+                            <button type="button" class="close" aria-label="Close" ng-click="hideError()"><span aria-hidden="true">&times;</span></button>
+                            <strong>Ошибка!</strong> {{errorMessage}}
+                        </div>
+
+                        <div ui-view></div>
+
+                        <div class="index-content" ng-if="showIndexContent">
+                            <div class="jumbotron">
+                                <div class="container">
+                                    <h1>Привет, читатель!</h1>
+                                    <p>
+                                        Этот сервис создан для того, чтобы вы могли сохранить и в любое время получить список прочитанных вами книг.
+
+                                    </p>
+                                    <p><a class="btn btn-primary btn-lg" ui-sref="book.add" role="button">Добавить запись о книге &raquo;</a></p>
+                                </div>
+                            </div>
+                            <p>
+                                Конечно, такой сервис не единственный. Но изученные нами конкуренты имеет некоторые недостатки и по некоторым
+                                не удовлетворяли авторов проекта. И речь не только о фатальном недостатке. Итак, наши преимущества:
+                            </p>
+                            <div class="row features">
+                                <div class="col-md-3">
+                                    <h4>Свобода ввода</h4>
+                                    <p>
+                                        Нет привязки к конкретным книгам. Пишите в заголовок и в автора то, что вы сами хотите.
+                                        Указывайте дату прочтения, какую вам удобно. Можете указать полную дату, можете указать только год, либо добавить месяц, если помните.
+                                        Можете вообще не указывать дату прочтения.
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h4>Ваши примечания</h4>
+                                    <p>
+                                        Вместо оценок мы предлагаем добавить ваши примечания к книге, 
+                                        где вы можете указать насколько вам понравилась книга, что в ней интересного или кому бы вы её порекомендовали в удобном вам формате.
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h4>Легкость просмотра</h4>
+                                    <p>
+                                        Мы постарались сделать список прочитанного наиболее легким, но в то же время информативным. 
+                                        Данные общедоступны для чтения. В любое время вы можете поделиться вашим списком.
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h4>Долговечность</h4>
+                                    <p>
+                                        Сервис не имеет своего сервера. Авторам не нужно оплачивать хостинг, поддерживать актуальность программного обеспечения.
+                                        Обо всём этом заботится площадка <a href="http://parse.com" target="_blank">Parse.com</a>, бесплатный тариф которой превосходит потребности этого сервиса.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="row latest-users-container" ng-cloak ng-show="lastUsers.length">
+                                <div class="col-md-12">
+                                    <h4>Недавние пользователи</h4>
+                                    <ul class="list-inline">
+                                        <li ng-repeat="lu in lastUsers">
+                                            <a ui-sref="user_books({nickname: lu.get('nickname'), u: lu.id})">{{lu.get('nickname')}}</a><sup>{{lu.get('booksCount')}}</sup>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="row" ng-cloak ng-show="subscriptions.length">
+                                <div class="col-md-12">
+                                    <h4>Подписки</h4>
+                                    <ul class="list-inline">
+                                        <li ng-repeat="sub in subscriptions">
+                                            <a ui-sref="user_books({nickname: sub.get('subUser').get('nickname'), u: sub.get('subUser').id})">{{sub.get('subUser').get('nickname')}}</a><sup>{{sub.get('subUser').get('booksCount')}} <span class="text-success" ng-show="getSubscriptionBookCountDif(sub)">(+{{getSubscriptionBookCountDif(sub)}})</span></sup>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                    </div>
+                    
+                    
+
+                </div>
+                
+                
+                <hr>
+
+                <footer>
+                    <p>&copy; Книгопись 2015 - сервис учёта прочитанных книг. <span ng-if="feedbackEmail" ng-cloak=""><a href="mailto:{{feedbackEmail}}" target="_blank">{{feedbackEmail}}</a> - адрес обратной связи.</span></p>
+                </footer>
+            </div> <!-- /container -->      
+        </div>
+
+        <script type="text/ng-template" id="templates/directives/book-form.html">
+                <div ng-show="!user" class="alert alert-warning">Войдите, чтобы использовать форму</div>
+                <p class="private-text-info"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Запись будет видна всем</p>
+                <form name="form" ng-controller="BookFormController" ng-show="user">
+                    <div class="form-group">
+                        <label for="bookTitleInput">Заголовок книги</label>
+                        <input type="text" class="form-control" id="bookTitleInput" placeholder="Укажите заголовок" ng-model="book.title">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthorInput">Автор книги</label>
+                        <input type="text" class="form-control" id="bookAuthorInput" placeholder="Укажите автора" ng-model="book.author">
+                    </div>
+                    <div class="form-group">
+                        <label>Приблизительная дата прочтения книги</label>
+                        <div>
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <input type="number" min="1930" max="2020" class="form-control" placeholder="год" ng-model="book.readYear">
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" min="1" max="12" class="form-control" placeholder="месяц" ng-model="book.readMonth">
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" min="1" max="31" class="form-control" placeholder="день" ng-model="book.readDay">
+                                </div>
+                            </div>
+                            <p class="help-block">Укажите хотя бы год</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookNotesInput">Ваши примечания</label>
+                        <textarea class="form-control" id="bookNotesInput" ng-model="book.notes"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" ng-click="saveBookAndReturn()">Сохранить и закрыть</button>
+                        <button type="submit" class="btn btn-default" ng-click="saveBookAndContinue()">Сохранить и добавить ещё</button>
+                        <button type="submit" class="btn btn-danger pull-right" ng-click="deleteBook()" ng-if="book.id">Удалить запись</button>
+                    </div>
+                    <div class="alert alert-success" role="alert" ng-show="bookSaved && form.$pristine">Запись успешно сохранена</div>
+                </form>
+        </script>
+        
+        <script type="text/ng-template" id="templates/directives/wish-form.html">
+                <div ng-show="!user" class="alert alert-warning">Войдите, чтобы использовать форму</div>
+                <p class="private-text-info"><span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span> Запись будет видна только вам.</p>
+            
+                <form name="form" ng-controller="WishFormController" ng-show="user">
+                    <div class="form-group">
+                        <label for="bookTitleInput">Заголовок книги</label>
+                        <input type="text" class="form-control" id="bookTitleInput" placeholder="Укажите заголовок" ng-model="book.title">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthorInput">Автор книги</label>
+                        <input type="text" class="form-control" id="bookAuthorInput" placeholder="Укажите автора" ng-model="book.author">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookPrioriryInput">Приоритет к прочтению</label>
+                        <input type="number" min="1" max="100" class="form-control" id="bookPrioriryInput" placeholder="1" ng-model="book.priority">
+                        <p class="help-block">Укажите число от 1 до 100. Чем больше число, темы выше в списке будет запись.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookNotesInput">Ваши примечания</label>
+                        <textarea class="form-control" id="bookNotesInput" ng-model="book.notes"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                            <button type="submit" class="btn btn-primary" ng-click="saveBookAndReturn()">Сохранить и закрыть</button>
+                            <button type="submit" class="btn btn-default" ng-click="saveBookAndContinue()">Сохранить и добавить ещё</button>
+                            <button type="submit" class="btn btn-danger pull-right" ng-click="deleteBook()" ng-if="book.id">Удалить запись</button>
+                        </div>
+                    <div class="alert alert-success" role="alert" ng-show="bookSaved && form.$pristine">Запись успешно сохранена</div>
+                </form>
+        </script>
+        
+        
+        
+        <script type="text/ng-template" id="templates/states/book.add.html">
+            <h2>Добавление записи о прочитанной книге</h2>
+            <div book-form></div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/book.edit.html">
+            <h2>Редактирование записи о прочитанной книге</h2>
+            <div book-form></div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/user_books.html">
+            
+            <h1>Список прочитанных книг пользователя <a ng-href="{{viewUser.get('profile')}}" target="_blank">{{viewUser.get('nickname')}}</a><span ng-show="user && user.id !== viewUser.id && viewUser && !viewUser.isInSubscriptions" ng-click="subscribe(user, viewUser)" class="glyphicon glyphicon-star-empty subscribe-btn" aria-hidden="true" title="Подписаться"></span><span ng-show="user && user.id !== viewUser.id && viewUser && viewUser.isInSubscriptions" ng-click="unsubscribe(user, viewUser)" class="glyphicon glyphicon-star subscribe-btn" aria-hidden="true" title="Отписаться"></span></h1>
+            <a ui-sref="book.add" ng-show="user.id === viewUser.id" class="btn btn-default hidden-md hidden-lg"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Добавить запись</a>
+            <hr>
+                
+        <div class="row">
+            
+            
+            <div class="col-md-2 pull-right" ng-cloak  ng-if="navBookYears.length > 1">
+                <div class="sidenav-container hidden-print hidden-xs hidden-sm">
+                    <h3>Оглавление</h3>
+                    <div class="sidenav-years-container">
+                        <ul class="nav sidenav-years">
+                            <li ng-repeat="year in navBookYears" class="sidenav-year-{{year}}">
+                                <a ng-click="goToYear(year)">
+                                    <span ng-if="year !== 'other'">{{year}}</span>
+                                    <span ng-if="year === 'other'">Прочие года</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-10">
+                <div class="books-list-container">
+                    <p ng-if="!booksDividedByYear.length && loaded" ng-cloak>
+                        <em>Записей ещё нет.</em>
+                    </p>
+
+                    <div ng-repeat="booksGroup in booksDividedByYear" class="book-group">
+                        <h3 id="year-{{booksGroup.group}}" ng-if="booksGroup.group !== 'other'">{{booksGroup.group}}</h3>
+                        <h3 id="year-other" ng-if="booksGroup.group === 'other'">Прочие года</h3>
+                        <ul class="books-list">
+                            <li ng-repeat="book in booksGroup.books">
+                                <strong class="book-title">{{book.title}} <a ui-sref="book.edit({bookId: book.id})" ng-if="user.id === book.user.id" class="on-title-show-btn">[редактировать]</a> <a ng-if="user && user.id !== book.user.id" class="on-title-show-btn" ui-sref="book.add({ob: book.id})">[прочитал]</a> <a ng-if="user && user.id !== book.user.id" class="on-title-show-btn" ui-sref="wish.add({ob: book.id})">[прочитать позже]</a></strong><br>
+                                <div ng-show="book.author">{{book.author}}</div>
+                                <div class="text-muted"><small ng-if="book.getReadDateForList()">[{{book.getReadDateForList()}}]</small> <small class="notes" ng-show="book.notes">{{book.notes}}</small></div>
+                                <div class="visible-xs visible-sm" ng-if="user.id === book.user.id"><a ui-sref="book.edit({bookId: book.id})" class="btn btn-default btn-xs">редактировать</a></strong></div>
+                            </li>
+                        </ul>
+                    </div>
+            
+                    <div ng-if="booksDividedByYear.length">
+                        <a class="btn btn-default btn-xs" href="javascript:void(0);" ng-click="downloadCsv()"><span class="glyphicon glyphicon glyphicon-download" aria-hidden="true"></span> Скачать список в формате CSV</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/wish.add.html">
+            <h2>Добавление книги, чтобы прочитать позже</h2>
+            <div wish-form></div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/wish.edit.html">
+            <h2>Редактирование записи из "Прочитать позже"</h2>
+            <div wish-form></div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/wish.list.html">
+            <h2>Список к прочтению</h2>
+            <p class="private-text-info">Виден только вам</p>
+    
+            <a ui-sref="wish.add" class="btn btn-default hidden-md hidden-lg"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Добавить запись</a>
+            <hr>
+            <p ng-if="!wishList.length && loaded" ng-cloak>
+                <em>Записей ещё нет.</em>
+            </p>
+            <div>
+            <ul class="wish-list">
+                <li ng-repeat="wish in wishList">
+                    <div class="badge badge-default">{{wish.priority}}</div>
+                    <strong class="book-title">{{wish.title}} <a ui-sref="wish.edit({id: wish.id})" class="on-title-show-btn">[редактировать]</a> <a ui-sref="book.add({w: wish.id})" class="on-title-show-btn">[прочитано!]</a></strong><br>
+                    {{wish.author}}<br>
+                    <small class="notes">{{wish.notes}}</small>
+                    <div class="visible-xs visible-sm">
+                      <a class="btn btn-default btn-xs" ui-sref="wish.edit({id: wish.id})" >редактировать</a> <a class="btn btn-default btn-xs" ui-sref="book.add({w: wish.id})">прочитано!</a></strong>
+                    </div>
+                </li>
+            </ul>
+            </div>
+        </script>
+        
+        <script type="text/ng-template" id="templates/states/settings.html">
+            <h2>Настройки</h2>
+            <div>
+            <form name="settingsForm" ng-show="user">
+                    <div class="form-group">
+                        <label for="userNicknameInput">Псевдоним</label>
+                        <input type="text" class="form-control" id="userNicknameInput" required placeholder="Укажите псевдоним" ng-model="settings.nickname">
+                    </div>
+                    <div class="form-group">
+                        <label for="userProfileInput">Ссылка на личную страницу</label>
+                        <input type="text" class="form-control" id="userProfileInput" placeholder="Укажите ссылку на страницу" ng-model="settings.profile">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" ng-click="saveUserSettings()">Сохранить и закрыть</button>
+                    </div>
+            </form>
+            </div>
+        </script>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="/js/vendor/jquery-1.11.1.min.js"><\/script>')</script>
+
+        <script src="/js/vendor/bootstrap.min.js"></script>
+
+        <script src="http://www.parsecdn.com/js/parse-1.3.3.min.js"></script>
+        <script src="//ulogin.ru/js/ulogin.js"></script>
+        <script src="/js/vendor/angular.min.js"></script>
+        <script src="/js/vendor/angular-ui-router.min.js"></script>
+
+        <script src="/js/services.js"></script>
+        <script src="/js/controllers.js"></script>
+        <script src="/js/main.js"></script>
+    </body>
+</html>
