@@ -43,10 +43,9 @@ Parse.Cloud.define("getCredentials", function(request, response) {
 
         var query = new Parse.Query(Parse.User);
         query.equalTo("username", userLogin);
-        query.find({
-            success: function(result) {
+        query.first({
+            success: function(user) {
                 if (result.length) {
-                    var user = result[0];
                     updateUser(user);
                 } else {
                     signUp();
